@@ -1,9 +1,5 @@
 import { API, GEN1_LIMIT, TYPE_COLORS } from "./constants";
 
-/**
- * Fetches the first GEN1_LIMIT Pokémon in chunks, calling onProgress after
- * each chunk resolves so the UI can show a live loading count.
- */
 export async function fetchPokedex(onProgress) {
   const listRes = await fetch(`${API}/pokemon?limit=${GEN1_LIMIT}&offset=0`);
   if (!listRes.ok) throw new Error("Could not reach the Pokémon API.");
@@ -24,7 +20,6 @@ export async function fetchPokedex(onProgress) {
   return results.sort((a, b) => a.id - b.id);
 }
 
-/** Fetches the English flavor-text description for a single Pokémon. */
 export async function fetchDescription(id) {
   const res = await fetch(`${API}/pokemon-species/${id}`);
   if (!res.ok) throw new Error("Field data unavailable right now.");
@@ -34,12 +29,6 @@ export async function fetchDescription(id) {
   );
   return entry ? entry.flavor_text.replace(/[\n\f\r]/g, " ") : "No field data available.";
 }
-
-/**
- * Computes damage multipliers for every attacking type against a Pokémon
- * with the given type(s), by combining each type's damage_relations.
- * Returns an object like { fire: 2, water: 0.5, ghost: 0, ... }.
- */
 export async function fetchTypeEffectiveness(typeNames) {
   const typeDatas = await Promise.all(
     typeNames.map((t) => fetch(`${API}/type/${t}`).then((r) => r.json()))
@@ -59,15 +48,6 @@ export async function fetchTypeEffectiveness(typeNames) {
       multipliers[t.name] = (multipliers[t.name] ?? 1) * 0;
     });
   });
-
-  return multipliers;
-}
-
-/**
- * Fetches a Pokémon's evolution chain and returns it as an array of
- * "levels" — each level is an array of {name, id}, since a level can
- * branch into multiple evolutions (e.g. Eevee).
- */
 export async function fetchEvolutionChain(id) {
   const speciesRes = await fetch(`${API}/pokemon-species/${id}`);
   if (!speciesRes.ok) throw new Error("Evolution data unavailable right now.");
